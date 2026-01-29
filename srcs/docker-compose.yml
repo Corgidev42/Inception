@@ -1,0 +1,34 @@
+services:
+  nginx:
+    build: ./requirements/nginx/
+    container_name: nginx-container
+    ports:
+      - "8080:80"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - wordpress
+    restart: always
+    expose:
+      - 443
+    volumes:
+      - wordpress-data:/var/www/html:ro
+    networks:
+      - inception
+
+  wordpress:
+    build: ./requirements/wordpress/
+    container_name: wordpress-container
+    restart: always
+    expose:
+      - 9000
+    networks:
+      - inception
+    volumes:
+      - wordpress-data:/var/www/html
+
+volumes:
+  wordpress-data:
+
+networks:
+  inception:
