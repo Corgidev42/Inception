@@ -1,7 +1,7 @@
 FROM debian:trixie
 
 RUN apt -y update \
-    && apt install -y nginx \
+    && apt install -y nginx openssl\
     && rm /etc/nginx/sites-enabled/default \
     && rm /etc/nginx/sites-available/default 
 

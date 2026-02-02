@@ -3,16 +3,14 @@ services:
     build: ./requirements/nginx/
     container_name: nginx-container
     ports:
-      - "8080:80"
+      - 443:443
     stdin_open: true
     tty: true
     depends_on:
       - wordpress
     restart: always
-    expose:
-      - 443
     volumes:
-      - wordpress-data:/var/www/html:ro
+      - wordpress_data:/var/www/html
     networks:
       - inception
 
@@ -25,10 +23,15 @@ services:
     networks:
       - inception
     volumes:
-      - wordpress-data:/var/www/html
+      - wordpress_data:/var/www/html
 
 volumes:
-  wordpress-data:
+  wordpress_data:
+      driver: local
+      driver_opts:
+        type: none
+        device: /Users/dev/data/wordpress
+        o: bind
 
 networks:
   inception:

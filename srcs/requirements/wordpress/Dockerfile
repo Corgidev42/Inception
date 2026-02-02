@@ -1,9 +1,15 @@
 FROM debian:trixie
 
 #------- PHP-FPM INSTALL -------
-RUN apt update \
-    && apt install -y php8.4-fpm \
-    wget
+RUN apt update 
+RUN apt install -y php8.4-fpm 
+RUN apt install -y php8.4-pdo 
+RUN apt install -y php8.4-intl 
+RUN apt install -y php8.4-zip 
+RUN apt install -y php8.4-opcache 
+RUN apt install -y php8.4-gd 
+RUN apt install -y wget
+RUN apt install -y php8.4-mysqli 
 
 COPY ./www/html/ /tmp/src/
 
