@@ -15,6 +15,8 @@ COPY ./www/html/ /tmp/src/
 
 COPY ./conf/www.conf /etc/php/8.4/fpm/pool.d/
 
+COPY ./conf/wp-config.php /tmp/src/
+
 COPY ./tools/entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

@@ -24,14 +24,34 @@ services:
       - inception
     volumes:
       - wordpress_data:/var/www/html
+  
+  mariadb:
+    build: ./requirements/mariadb/
+    container_name: mariadb-container
+    restart: always
+    expose:
+      - 3306
+    networks:
+      - inception
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    
+    
 
 volumes:
   wordpress_data:
-      driver: local
-      driver_opts:
-        type: none
-        device: /Users/dev/data/wordpress
-        o: bind
+    driver: local
+    driver_opts:
+      type: none
+      device: /Users/dev/data/wordpress
+      o: bind
+  
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /Users/dev/data/mariadb
+      o: bind
 
 networks:
   inception:
