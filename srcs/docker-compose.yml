@@ -20,10 +20,14 @@ services:
     restart: always
     expose:
       - 9000
+    depends_on:
+      - mariadb
     networks:
       - inception
     volumes:
       - wordpress_data:/var/www/html
+    env_file:
+      - .env
   
   mariadb:
     build: ./requirements/mariadb/
@@ -35,23 +39,23 @@ services:
       - inception
     volumes:
       - mariadb_data:/var/lib/mysql
-    
-    
+    env_file:
+      - .env
 
 volumes:
   wordpress_data:
     driver: local
     driver_opts:
       type: none
-      device: /Users/dev/data/wordpress
       o: bind
+      device: /Users/dev/data/wordpress
   
   mariadb_data:
     driver: local
     driver_opts:
       type: none
-      device: /Users/dev/data/mariadb
       o: bind
+      device: /Users/dev/data/mariadb
 
 networks:
   inception:

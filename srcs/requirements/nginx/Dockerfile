@@ -3,7 +3,8 @@ FROM debian:trixie
 RUN apt -y update \
     && apt install -y nginx openssl\
     && rm /etc/nginx/sites-enabled/default \
-    && rm /etc/nginx/sites-available/default 
+    && rm /etc/nginx/sites-available/default \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /etc/nginx/ssl \
     && openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
