@@ -1,16 +1,16 @@
-FROM debian:trixie
+FROM debian:bookworm
 
 # Installation de PHP et des dépendances
 RUN apt update && apt install -y \
-    php8.4-fpm \
-    php8.4-mysqli \
-    php8.4-curl \
-    php8.4-dom \
-    php8.4-exif \
-    php8.4-fileinfo \
-    php8.4-mbstring \
-    php8.4-xml \
-    php8.4-zip \
+    php8.2-fpm \
+    php8.2-mysqli \
+    php8.2-curl \
+    php8.2-dom \
+    php8.2-exif \
+    php8.2-fileinfo \
+    php8.2-mbstring \
+    php8.2-xml \
+    php8.2-zip \
     mariadb-client \
     wget \
     netcat-traditional \
@@ -23,7 +23,7 @@ RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.ph
 
 # Configuration de PHP-FPM (dossier run + pool config)
 RUN mkdir -p /run/php
-COPY ./conf/www.conf /etc/php/8.4/fpm/pool.d/
+COPY ./conf/www.conf /etc/php/8.2/fpm/pool.d/
 
 # Script d'entrée
 COPY ./tools/entrypoint.sh /usr/local/bin/
@@ -34,4 +34,4 @@ WORKDIR /var/www/html
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # -F pour forcer PHP-FPM à rester au premier plan
-CMD ["php-fpm8.4", "-F"]
+CMD ["php-fpm8.2", "-F"]

@@ -1,5 +1,17 @@
 #!/bin/bash
 
+read_secret() {
+  local var_name="$1"
+  local file_var_name="${var_name}_FILE"
+  local file_path="${!file_var_name:-}"
+  if [ -n "${file_path}" ] && [ -f "${file_path}" ]; then
+    export "${var_name}=$(cat "${file_path}")"
+  fi
+}
+
+read_secret "SQL_PASSWORD"
+read_secret "SQL_ROOT_PASSWORD"
+
 # 1. Crée les fichiers système de MariaDB (les tables de privilèges, les dictionnaires de données), si ils n'existent pas.
 if [ ! -d "/var/lib/mysql/mysql" ]; then
     echo "Initialisation du répertoire des données..."
@@ -14,7 +26,14 @@ mysqld_safe --user=mysql --datadir='/var/lib/mysql' &
 # 3. Attendre que MariaDB réponde vraiment 
 #    Le processus MariaDB peut prendre quelques secondes à s'initialiser. 
 #    Si on essaie de créer l'utilisateur trop tôt, la commande échouera car le serveur ne répondra pas encore.
+MAX_TRIES=30
+tries=0
 until mysqladmin ping >/dev/null 2>&1; do
+    tries=$((tries + 1))
+    if [ "${tries}" -ge "${MAX_TRIES}" ]; then
+        echo "MariaDB ne répond pas après ${MAX_TRIES} tentatives, arrêt."
+        exit 1
+    fi
     echo "En attente de MariaDB..."
     sleep 5
 done

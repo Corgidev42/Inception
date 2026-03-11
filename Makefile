@@ -9,7 +9,10 @@ NC     := \033[0m
 
 # Docker variables
 COMPOSE_FILE := srcs/docker-compose.yml
-COMPOSE_CMD  := docker-compose -f $(COMPOSE_FILE)
+COMPOSE_CMD  := docker compose -f $(COMPOSE_FILE)
+
+LOGIN_NAME := $(shell grep -E '^LOGIN_NAME=' srcs/.env | cut -d '=' -f2)
+DATA_DIR   := /home/$(LOGIN_NAME)/data
 
 # Default target
 help:
@@ -146,8 +149,8 @@ status:
 	@docker network inspect srcs_inception --format="IP: {{range .Containers}}{{.IPv4Address}} {{end}}" 2>/dev/null || echo "  Network not yet created"
 	@echo ""
 	@echo "$(GREEN)Volumes:$(NC)"
-	@ls -lah /Users/dev/data/wordpress 2>/dev/null | head -2 | tail -1 | awk '{print "  WordPress: "$$9" files"}' || echo "  WordPress: not mounted"
-	@ls -lah /Users/dev/data/mariadb 2>/dev/null | head -2 | tail -1 | awk '{print "  MariaDB: "$$9" files"}' || echo "  MariaDB: not mounted"
+	@ls -lah $(DATA_DIR)/wordpress 2>/dev/null | head -2 | tail -1 | awk '{print "  WordPress: "$$9" files"}' || echo "  WordPress: not mounted"
+	@ls -lah $(DATA_DIR)/mariadb 2>/dev/null | head -2 | tail -1 | awk '{print "  MariaDB: "$$9" files"}' || echo "  MariaDB: not mounted"
 	@echo ""
 	@echo "$(BLUE)╚═══════════════════════╝$(NC)"
 
@@ -224,7 +227,7 @@ info:
 	@echo "$(BLUE)╔═ Project Information ═╗$(NC)"
 	@echo "$(GREEN)Project:$(NC) Inception (42 Curriculum)"
 	@echo "$(GREEN)Compose File:$(NC) $(COMPOSE_FILE)"
-	@echo "$(GREEN)Data Directory:$(NC) /Users/dev/data/"
+	@echo "$(GREEN)Data Directory:$(NC) $(DATA_DIR)"
 	@echo "$(GREEN)Services:$(NC) Nginx, WordPress, MariaDB"
 	@echo "$(BLUE)╚════════════════════════╝$(NC)"
 

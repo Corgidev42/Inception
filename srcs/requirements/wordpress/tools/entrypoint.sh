@@ -1,12 +1,33 @@
 #!/bin/sh
 set -e
 
+read_secret() {
+  var_name="$1"
+  file_var_name="${var_name}_FILE"
+  eval file_path="\${${file_var_name}:-}"
+  if [ -n "${file_path}" ] && [ -f "${file_path}" ]; then
+    eval "${var_name}=\"$(cat "${file_path}")\""
+    export "${var_name}"
+  fi
+}
+
+read_secret "SQL_PASSWORD"
+read_secret "ADMIN_PASSWORD"
+read_secret "USER_PASS"
+
 # 1. Attente de MariaDB
 #    Docker lance les conteneurs presque en même temps. 
 #	 WordPress démarre souvent avant que MariaDB n'ait fini d'initialiser ses bases.
 #    nc (Netcat) interroge le port 3306 de l'hôte mariadb. Tant que le port est fermé, le script boucle. 
 #	 Cela évite l'erreur fatale "Error establishing a database connection" au démarrage.
-until nc -zv mariadb 3306; do
+MAX_TRIES=60
+tries=0
+until nc -z mariadb 3306; do
+    tries=$((tries + 1))
+    if [ "${tries}" -ge "${MAX_TRIES}" ]; then
+        echo "MariaDB n'est pas joignable après ${MAX_TRIES} tentatives, arrêt."
+        exit 1
+    fi
     echo "Le port 3306 de MariaDB est fermé - attente..."
     sleep 2
 done

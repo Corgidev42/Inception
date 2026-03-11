@@ -1,6 +1,6 @@
-# Inception
-
 *This project has been created as part of the 42 curriculum by vbonnard.*
+
+# Inception
 
 ## Description
 
@@ -37,40 +37,51 @@ The stack consists of three main services:
 
 ### Prerequisites
 
-- Docker and Docker Compose installed on your system
+- Docker installed on your system (inside a virtual machine, as required by the subject)
+- Docker Compose v2 (`docker compose`)
 - Bash shell
 - Basic understanding of Docker concepts
 
 ### Installation & Compilation
 
-1. **Clone the repository**:
-   ```bash
-   cd /Users/dev/Documents/Workspace/Doker/Inception
+1. **Configure environment variables**:
+   Edit the `.env` file in `srcs/` to set your login, domain name, and non-sensitive settings:
    ```
-
-2. **Configure environment variables**:
-   Edit the `.env` file in `srcs/` to set your database credentials, domain name, and admin credentials:
-   ```
-   DOMAIN_NAME=your-domain.com
+   LOGIN_NAME=your_login
+   DOMAIN_NAME=your_login.42.fr
    SITE_TITLE=Your Site Title
+   DATA_DIR=/home/${LOGIN_NAME}/data
    SQL_DATABASE=wordpress
    SQL_USER=wp_user
-   SQL_PASSWORD=secure_password
-   SQL_ROOT_PASSWORD=root_password
+   SQL_PASSWORD_FILE=/run/secrets/db_password
+   SQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
+   ADMIN_USER=site_owner
+   ADMIN_PASSWORD_FILE=/run/secrets/wp_admin_password
+   USER_LOGIN=wp_user
+   USER_PASS_FILE=/run/secrets/wp_user_password
    ```
 
-3. **Create data directories** (required for bind mounts):
+2. **Create data directories** (as required by the subject):
    ```bash
-   mkdir -p /Users/dev/data/wordpress
-   mkdir -p /Users/dev/data/mariadb
-   chmod 777 /Users/dev/data/wordpress
-   chmod 777 /Users/dev/data/mariadb
+   sudo mkdir -p /home/your_login/data/wordpress
+   sudo mkdir -p /home/your_login/data/mariadb
+   sudo chmod 755 /home/your_login/data
    ```
 
-4. **Update your hosts file** (for local testing):
+3. **Create Docker secrets locally** (never commit them):
+   ```bash
+   mkdir -p secrets
+   printf '%s' 'change_me_db_password' > secrets/db_password.txt
+   printf '%s' 'change_me_db_root_password' > secrets/db_root_password.txt
+   printf '%s' 'change_me_wp_admin_password' > secrets/wp_admin_password.txt
+   printf '%s' 'change_me_wp_user_password' > secrets/wp_user_password.txt
+   chmod 600 secrets/*.txt
+   ```
+
+4. **Update your hosts file** (domain required by the subject):
    ```bash
    sudo nano /etc/hosts
-   # Add: 127.0.0.1 your-domain.com
+   # Add: <your_local_ip> your_login.42.fr
    ```
 
 ### Building & Running
@@ -97,18 +108,18 @@ make re
 **Manual Docker Compose commands**:
 ```bash
 cd srcs/
-docker-compose up -d          # Start in detached mode
-docker-compose logs -f        # Follow logs
-docker-compose ps             # View running containers
-docker-compose down           # Stop services
-docker-compose down -v        # Stop and remove volumes
+docker compose up -d          # Start in detached mode
+docker compose logs -f        # Follow logs
+docker compose ps             # View running containers
+docker compose down           # Stop services
+docker compose down -v        # Stop and remove volumes
 ```
 
 ### Accessing the Website
 
 - **WordPress site**: Navigate to `https://your-domain.com`
 - **WordPress admin panel**: `https://your-domain.com/wp-admin`
-- **Login credentials**: See `.env` file for `ADMIN_USER` and `ADMIN_PASSWORD`
+- **Login credentials**: `ADMIN_USER` is in `srcs/.env`, passwords are in `secrets/*.txt`
 
 ## Docker Architecture & Design Choices
 
@@ -128,10 +139,10 @@ docker-compose down -v        # Stop and remove volumes
 
 | Method | Pros | Cons | Used in Inception |
 |--------|------|------|------------------|
-| **Secrets** | More secure, encrypted at rest | Complex orchestration needed | ✅ Best practice (via .env + `env_file`) |
-| **Environment Variables** | Simple, readable | Visible in processes, less secure | ⚠️ Used with caution |
+| **Secrets** | Not stored in images or git | Need local files during setup | ✅ Used for DB and WP passwords |
+| **Environment Variables** | Simple for non-sensitive config | Not appropriate for passwords | ✅ Used for domain, users, settings |
 
-**Design choice**: The project uses an `.env` file loaded via Docker Compose's `env_file` directive. This separates sensitive data from Docker image definitions. For production, consider using Docker secrets or HashiCorp Vault.
+**Design choice**: The project keeps non-sensitive configuration in `srcs/.env`, and uses Docker secrets (files mounted under `/run/secrets/`) for passwords.
 
 ### Docker Network vs Host Network
 
@@ -152,7 +163,7 @@ docker-compose down -v        # Stop and remove volumes
 | **Named Volumes** | Managed data | Managed by Docker | Better for production |
 | **Bind Mounts** | Development, specific paths | Direct filesystem | More control |
 
-**Design choice**: The project uses **bind mounts** to keep data in `/Users/dev/data/` for visibility and control. The configuration is:
+**Design choice**: The project uses Docker **named volumes** for persistence, backed by host directories under `/home/<login>/data` as required by the subject. The configuration is:
 
 ```yaml
 volumes:
@@ -161,7 +172,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /Users/dev/data/wordpress
+      device: ${DATA_DIR}/wordpress
 ```
 
 **Benefits**:
