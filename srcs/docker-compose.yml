@@ -1,6 +1,5 @@
 services:
   nginx:
-    image: nginx
     build: ./requirements/nginx/
     container_name: nginx-container
     ports:
@@ -18,7 +17,6 @@ services:
       - inception
 
   wordpress:
-    image: wordpress
     build: ./requirements/wordpress/
     container_name: wordpress-container
     restart: always
@@ -38,7 +36,6 @@ services:
       - wp_user_password
   
   mariadb:
-    image: mariadb
     build: ./requirements/mariadb/
     container_name: mariadb-container
     restart: always
