@@ -119,7 +119,7 @@ docker compose down -v        # Stop and remove volumes
 
 - **WordPress site**: Navigate to `https://your-domain.com`
 - **WordPress admin panel**: `https://your-domain.com/wp-admin`
-- **Login credentials**: `ADMIN_USER` is in `srcs/.env`, passwords are in `secrets/*.txt`
+- **Login credentials**: the admin username is `ADMIN_USER` from `srcs/.env` on the first install; passwords come from `secrets/*.txt`. If the database volume already exists, WordPress keeps the existing users/passwords (use WP-CLI to update them or recreate volumes).
 
 ## Docker Architecture & Design Choices
 

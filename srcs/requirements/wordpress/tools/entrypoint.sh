@@ -5,15 +5,48 @@ read_secret() {
   var_name="$1"
   file_var_name="${var_name}_FILE"
   eval file_path="\${${file_var_name}:-}"
-  if [ -n "${file_path}" ] && [ -f "${file_path}" ]; then
+  if [ -n "${file_path}" ]; then
+    if [ ! -f "${file_path}" ]; then
+      echo "${file_path} introuvable"
+      exit 1
+    fi
     eval "${var_name}=\"$(cat "${file_path}")\""
     export "${var_name}"
+    return
   fi
 }
 
 read_secret "SQL_PASSWORD"
 read_secret "ADMIN_PASSWORD"
 read_secret "USER_PASS"
+
+require_var() {
+  var_name="$1"
+  eval val="\${${var_name}:-}"
+  if [ -z "${val}" ]; then
+    echo "${var_name} manquant"
+    exit 1
+  fi
+}
+
+require_var "SQL_DATABASE"
+require_var "SQL_USER"
+require_var "SQL_PASSWORD"
+require_var "DOMAIN_NAME"
+require_var "SITE_TITLE"
+require_var "ADMIN_USER"
+require_var "ADMIN_PASSWORD"
+require_var "ADMIN_EMAIL"
+require_var "USER_LOGIN"
+require_var "USER_PASS"
+require_var "USER_EMAIL"
+
+echo "${ADMIN_USER}" | grep -qi "admin" && { echo "ADMIN_USER invalide"; exit 1; }
+echo "${USER_LOGIN}" | grep -qi "admin" && { echo "USER_LOGIN invalide"; exit 1; }
+if [ "${ADMIN_USER}" = "${USER_LOGIN}" ]; then
+  echo "ADMIN_USER et USER_LOGIN doivent être différents"
+  exit 1
+fi
 
 # 1. Attente de MariaDB
 #    Docker lance les conteneurs presque en même temps. 
@@ -80,6 +113,33 @@ EOF
         --allow-root
 
     wp user create $USER_LOGIN $USER_EMAIL --role=author --user_pass=$USER_PASS --allow-root
+fi
+
+if wp core is-installed --allow-root >/dev/null 2>&1; then
+    existing_id="$(wp user list --search="$ADMIN_EMAIL" --search-columns=user_email --field=ID --allow-root 2>/dev/null | head -n 1 || true)"
+    if [ -n "${existing_id}" ]; then
+        existing_login="$(wp user get "${existing_id}" --field=user_login --allow-root 2>/dev/null || true)"
+        if [ -n "${existing_login}" ] && [ "${existing_login}" != "${ADMIN_USER}" ]; then
+            wp user update "${existing_id}" --user_email="replaced-${existing_id}@local.invalid" --allow-root >/dev/null 2>&1 || true
+        fi
+    fi
+
+    if wp user get "$ADMIN_USER" --field=ID --allow-root >/dev/null 2>&1; then
+        wp user update "$ADMIN_USER" --user_pass="$ADMIN_PASSWORD" --user_email="$ADMIN_EMAIL" --role=administrator --skip-email --allow-root
+    else
+        wp user create "$ADMIN_USER" "$ADMIN_EMAIL" --role=administrator --user_pass="$ADMIN_PASSWORD" --skip-email --allow-root
+    fi
+
+    if wp user get "$USER_LOGIN" --field=ID --allow-root >/dev/null 2>&1; then
+        wp user update "$USER_LOGIN" --user_pass="$USER_PASS" --user_email="$USER_EMAIL" --role=author --skip-email --allow-root
+    else
+        wp user create "$USER_LOGIN" "$USER_EMAIL" --role=author --user_pass="$USER_PASS" --skip-email --allow-root
+    fi
+
+    if [ "$ADMIN_USER" != "admin_login" ] && wp user get admin_login --field=ID --allow-root >/dev/null 2>&1; then
+        admin_id="$(wp user get "$ADMIN_USER" --field=ID --allow-root)"
+        wp user delete admin_login --reassign="${admin_id}" --yes --allow-root
+    fi
 fi
 
 # 6. Permissions et lancement final
