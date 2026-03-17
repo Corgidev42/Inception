@@ -38,7 +38,7 @@ The Inception stack provides a complete web hosting solution with three services
 
 **Using Make** (recommended):
 ```bash
-cd /Users/dev/Documents/Workspace/Doker/Inception
+cd /path/to/Inception
 make up
 ```
 
@@ -63,7 +63,7 @@ cd /Users/dev/Documents/Workspace/Doker/Inception/srcs
 docker-compose down
 ```
 
-**Important**: `down` stops containers but preserves your data (stored in `/Users/dev/data/`).
+**Important**: `down` stops containers but preserves your data (stored in `/home/<login>/data/`).
 
 ### Complete Cleanup (Removes Everything)
 
@@ -117,43 +117,38 @@ Username: ADMIN_USER    (from .env)
 Password: ADMIN_PASSWORD (from .env)
 ```
 
-Example from default `.env`:
-```
-Username: admin_login
-Password: admin_pass
-```
+Example: use `ADMIN_USER` from `.env` and password from `secrets/wp_admin_password.txt`.
 
 ## Managing Credentials
 
 ### Locating Your Credentials
 
-All credentials are stored in one file:
-```
-/Users/dev/Documents/Workspace/Doker/Inception/srcs/.env
-```
+All credentials are stored in:
+- `srcs/.env` — non-sensitive configuration (domain, usernames)
+- `secrets/*.txt` — passwords (never commit these)
 
 ### Credential Types
 
-**WordPress Admin User**:
+**WordPress Admin User** (from `srcs/.env` and `secrets/wp_admin_password.txt`):
 ```env
-ADMIN_USER=admin_login
-ADMIN_PASSWORD=admin_pass
-ADMIN_EMAIL=admin@example.com
+ADMIN_USER=site_owner
+ADMIN_PASSWORD_FILE=/run/secrets/wp_admin_password
+ADMIN_EMAIL=admin@42.fr
 ```
 
 **WordPress Regular User**:
 ```env
-USER_LOGIN=vbonnard
-USER_PASS=vbonnard_pass
-USER_EMAIL=vbonnard@student.42.fr
+USER_LOGIN=wp_user
+USER_PASS_FILE=/run/secrets/wp_user_password
+USER_EMAIL=user@student.42.fr
 ```
 
-**Database Credentials**:
+**Database Credentials** (passwords in secrets):
 ```env
 SQL_DATABASE=wordpress
 SQL_USER=wp_user
-SQL_PASSWORD=your_db_password
-SQL_ROOT_PASSWORD=root_password
+SQL_PASSWORD_FILE=/run/secrets/db_password
+SQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
 ```
 
 ### Changing Credentials
@@ -177,14 +172,14 @@ SQL_ROOT_PASSWORD=root_password
 
 2. Edit `.env` file:
    ```bash
-   nano /Users/dev/Documents/Workspace/Doker/Inception/srcs/.env
+   nano srcs/.env
    ```
 
-3. Change `SQL_USER` and `SQL_PASSWORD`
+3. Change `SQL_USER` and update `secrets/db_password.txt`
 
 4. Remove old data (containers will recreate the database):
    ```bash
-   rm -rf /Users/dev/data/mariadb/*
+   rm -rf /home/your_login/data/mariadb/*
    ```
 
 5. Restart:
@@ -343,7 +338,7 @@ The certificate is self-signed (not from a trusted authority).
 3. Reset everything (deletes all content):
    ```bash
    make fclean
-   rm -rf /Users/dev/data/*
+   rm -rf /home/your_login/data/*
    make up
    ```
 
@@ -356,13 +351,14 @@ make logs
 
 **Common causes**:
 - Database not initialized yet (wait 30 seconds)
-- Permissions issues with `/Users/dev/data/` directories
+- Permissions issues with `/home/<login>/data/` directories
 - Port 443 already in use
 
 **Fix permissions**:
 ```bash
-chmod 777 /Users/dev/data/wordpress
-chmod 777 /Users/dev/data/mariadb
+chmod 755 /home/your_login/data
+chmod 777 /home/your_login/data/wordpress
+chmod 777 /home/your_login/data/mariadb
 ```
 
 ### Issue: Cannot Write to WordPress (Permission Denied)
@@ -371,9 +367,9 @@ chmod 777 /Users/dev/data/mariadb
 
 **Solution**:
 ```bash
-# Make data directory writable
-sudo chown -R 33:33 /Users/dev/data/wordpress
-sudo chmod -R 755 /Users/dev/data/wordpress
+# Make data directory writable (replace your_login with your login)
+sudo chown -R 33:33 /home/your_login/data/wordpress
+sudo chmod -R 755 /home/your_login/data/wordpress
 ```
 
 (33 is the www-data user ID inside containers)

@@ -145,7 +145,7 @@ fi
 # 6. Permissions et lancement final
 #    chown : Donne la propriété des fichiers à www-data (l'utilisateur standard pour PHP-FPM). 
 #	 Sans ça, WordPress ne pourra pas uploader d'images ou faire des mises à jour.
-#	 exec "$@" : Elle remplace le script par le processus principal défini dans mon Dockerfile (php-fpm8.4 -F). 
+#	 exec "$@" : Elle remplace le script par le processus principal défini dans mon Dockerfile (php-fpm8.2 -F). 
 #	 Cela permet au conteneur de rester vivant et de recevoir les signaux d'arrêt correctement.
 chown -R www-data:www-data /var/www/html/
 exec "$@"

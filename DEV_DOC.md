@@ -91,16 +91,17 @@ USER_EMAIL=user@example.com
 ### 3. Create Data Directories
 
 ```bash
-# Create host directories for bind mounts
-mkdir -p /Users/dev/data/wordpress
-mkdir -p /Users/dev/data/mariadb
+# Create host directories (replace your_login with your 42 login)
+mkdir -p /home/your_login/data/wordpress
+mkdir -p /home/your_login/data/mariadb
 
 # Set proper permissions
-chmod 777 /Users/dev/data/wordpress
-chmod 777 /Users/dev/data/mariadb
+chmod 755 /home/your_login/data
+chmod 777 /home/your_login/data/wordpress
+chmod 777 /home/your_login/data/mariadb
 ```
 
-**Why**: Docker volumes are defined as bind mounts pointing to these paths. They must exist before containers start.
+**Why**: Docker volumes store data in these paths (as required by the subject). The `make up` command creates them automatically.
 
 ### 4. Update Local DNS (for development)
 
@@ -166,21 +167,21 @@ docker-compose down -v
 Each service has a `Dockerfile`:
 
 **Nginx Dockerfile**:
-1. Starts from `debian:trixie` base image
+1. Starts from `debian:bookworm` base image
 2. Installs `nginx` and `openssl`
 3. Generates self-signed SSL certificates
 4. Copies custom Nginx configuration
 5. Starts Nginx in foreground mode
 
 **WordPress Dockerfile**:
-1. Starts from `debian:trixie` base image
+1. Starts from `debian:bookworm` base image
 2. Installs PHP 8.4-FPM and extensions
 3. Installs WP-CLI for WordPress management
 4. Copies entrypoint script
 5. Runs entrypoint which downloads WordPress and creates configuration
 
 **MariaDB Dockerfile**:
-1. Starts from `debian:trixie` base image
+1. Starts from `debian:bookworm` base image
 2. Installs MariaDB server
 3. Copies setup script
 4. Runs setup which initializes database and creates users
@@ -317,26 +318,26 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /Users/dev/data/wordpress
+      device: ${DATA_DIR}/wordpress
   
   mariadb_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /Users/dev/data/mariadb
+      device: ${DATA_DIR}/mariadb
 ```
 
 **Explanation**:
-- Type `none` with `bind` option = bind mount
-- `device` = path on host machine
-- Data persists in `/Users/dev/data/` even if containers are deleted
+- `DATA_DIR` comes from `srcs/.env` (typically `/home/<login>/data`)
+- Type `none` with `bind` option = named volume backed by host path
+- Data persists in `/home/<login>/data/` even if containers are deleted
 
 ### Where Data is Stored
 
 ```
 Host Machine:
-/Users/dev/data/
+/home/<login>/data/
 ├── wordpress/          (mounted to /var/www/html in WordPress container)
 │   ├── wp-content/     (themes, plugins, uploads)
 │   ├── wp-config.php   (database connection)
@@ -345,16 +346,18 @@ Host Machine:
     ├── mysql/          (system database)
     ├── wordpress/      (application database)
     └── performance_schema/
+
+Replace <login> with your 42 login (LOGIN_NAME from .env).
 ```
 
 ### Backup Data
 
 ```bash
-# Backup WordPress files
-tar -czf wordpress_backup.tar.gz /Users/dev/data/wordpress/
+# Backup WordPress files (replace your_login with your login)
+tar -czf wordpress_backup.tar.gz /home/your_login/data/wordpress/
 
 # Backup database
-tar -czf mariadb_backup.tar.gz /Users/dev/data/mariadb/
+tar -czf mariadb_backup.tar.gz /home/your_login/data/mariadb/
 
 # Or directly from container
 docker-compose exec mariadb mysqldump -u root -p"${SQL_ROOT_PASSWORD}" --all-databases > backup.sql
@@ -379,9 +382,9 @@ docker-compose exec -T mariadb mysql -u root -p"${SQL_ROOT_PASSWORD}" < backup.s
 # Stop containers and remove volumes
 docker-compose down -v
 
-# Remove data directories
-rm -rf /Users/dev/data/wordpress/*
-rm -rf /Users/dev/data/mariadb/*
+# Remove data directories (replace your_login with your login)
+rm -rf /home/your_login/data/wordpress/*
+rm -rf /home/your_login/data/mariadb/*
 
 # Restart (will recreate from Dockerfiles)
 docker-compose up -d
@@ -512,7 +515,7 @@ Inception/
 - Configures restart policies
 
 **Dockerfile** (each service):
-- Base image selection (debian:trixie)
+- Base image selection (debian:bookworm)
 - Package installation
 - Configuration file copying
 - Entrypoint/CMD definition
@@ -557,7 +560,7 @@ Inception/
 1. Edit `srcs/requirements/mariadb/tools/setup.sh`
 2. Remove existing database data:
    ```bash
-   rm -rf /Users/dev/data/mariadb/*
+   rm -rf /home/your_login/data/mariadb/*
    ```
 3. Rebuild and restart:
    ```bash
@@ -578,7 +581,7 @@ docker-compose exec wordpress wp plugin install jetpack --activate --allow-root
 
 **Method 3: Direct file copy** (for development):
 ```bash
-cp -r /path/to/plugin /Users/dev/data/wordpress/wp-content/plugins/
+cp -r /path/to/plugin /home/your_login/data/wordpress/wp-content/plugins/
 ```
 
 ### Installing WordPress Themes
@@ -633,8 +636,8 @@ docker stats --no-stream
 docker-compose exec mariadb iostat -x 1 5
 
 # Check disk usage
-du -sh /Users/dev/data/wordpress
-du -sh /Users/dev/data/mariadb
+du -sh /home/your_login/data/wordpress
+du -sh /home/your_login/data/mariadb
 ```
 
 ### Network Diagnostics

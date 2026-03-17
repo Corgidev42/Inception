@@ -45,7 +45,7 @@ The stack consists of three main services:
 ### Installation & Compilation
 
 1. **Configure environment variables**:
-   Edit the `.env` file in `srcs/` to set your login, domain name, and non-sensitive settings:
+   Copy `srcs/.env.example` to `srcs/.env` and edit it with your login, domain name, and non-sensitive settings:
    ```
    LOGIN_NAME=your_login
    DOMAIN_NAME=your_login.42.fr
@@ -61,11 +61,11 @@ The stack consists of three main services:
    USER_PASS_FILE=/run/secrets/wp_user_password
    ```
 
-2. **Create data directories** (as required by the subject):
+2. **Create data directories** (as required by the subject). The `make up` command creates them automatically, or you can create them manually:
    ```bash
-   sudo mkdir -p /home/your_login/data/wordpress
-   sudo mkdir -p /home/your_login/data/mariadb
-   sudo chmod 755 /home/your_login/data
+   mkdir -p /home/your_login/data/wordpress
+   mkdir -p /home/your_login/data/mariadb
+   chmod 755 /home/your_login/data
    ```
 
 3. **Create Docker secrets locally** (never commit them):

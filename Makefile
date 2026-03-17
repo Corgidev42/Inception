@@ -9,9 +9,12 @@ NC     := \033[0m
 
 # Docker variables
 COMPOSE_FILE := srcs/docker-compose.yml
-COMPOSE_CMD  := docker compose -f $(COMPOSE_FILE)
+COMPOSE_CMD  := docker compose -f $(COMPOSE_FILE) --env-file srcs/.env
 
-LOGIN_NAME := $(shell grep -E '^LOGIN_NAME=' srcs/.env | cut -d '=' -f2)
+LOGIN_NAME := $(shell grep -E '^LOGIN_NAME=' srcs/.env 2>/dev/null | cut -d '=' -f2)
+ifeq ($(LOGIN_NAME),)
+  LOGIN_NAME := $(USER)
+endif
 DATA_DIR   := /home/$(LOGIN_NAME)/data
 
 # Default target
@@ -64,7 +67,10 @@ help:
 # ╚═══════════════════════════════════════════════════════════╝
 
 up:
+	@if [ ! -f srcs/.env ]; then echo "$(RED)[!] Create srcs/.env from srcs/.env.example first$(NC)"; exit 1; fi
 	@echo "$(GREEN)[+] Starting Inception services...$(NC)"
+	@mkdir -p $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
+	@chmod 755 $(DATA_DIR) 2>/dev/null || true
 	@$(COMPOSE_CMD) up -d
 	@echo "$(GREEN)[✓] Services started successfully!$(NC)"
 	@echo "$(YELLOW)Waiting for initialization...$(NC)"
@@ -217,7 +223,7 @@ validate:
 
 test-db:
 	@echo "$(BLUE)[*] Testing database connection...$(NC)"
-	@$(COMPOSE_CMD) exec wordpress mysql -h mariadb -u $$(grep SQL_USER srcs/.env | cut -d '=' -f2) -p$$(grep SQL_PASSWORD srcs/.env | cut -d '=' -f2) -e "SELECT 1;" 2>/dev/null && echo "$(GREEN)[✓] Database connection OK!$(NC)" || echo "$(RED)[✗] Database connection failed!$(NC)"
+	@$(COMPOSE_CMD) exec wordpress wp db check --allow-root 2>/dev/null && echo "$(GREEN)[✓] Database connection OK!$(NC)" || echo "$(RED)[✗] Database connection failed!$(NC)"
 
 test-wp:
 	@echo "$(BLUE)[*] Testing WordPress connectivity...$(NC)"
