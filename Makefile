@@ -39,6 +39,8 @@ help:
 	@echo "  $(YELLOW)make build-nginx$(NC) - Build only Nginx image"
 	@echo "  $(YELLOW)make build-wp$(NC)    - Build only WordPress image"
 	@echo "  $(YELLOW)make build-db$(NC)    - Build only MariaDB image"
+	@echo "  $(YELLOW)make build-adminer$(NC) - Build Adminer (bonus)"
+	@echo "  $(YELLOW)make build-static$(NC)  - Build static site (bonus)"
 	@echo ""
 	@echo "$(GREEN)Monitoring Commands:$(NC)"
 	@echo "  $(YELLOW)make ps$(NC)          - Show status of all containers"
@@ -124,6 +126,16 @@ build-db:
 	@echo "$(GREEN)[+] Building MariaDB image...$(NC)"
 	@$(COMPOSE_CMD) build mariadb
 	@echo "$(GREEN)[✓] MariaDB image built!$(NC)"
+
+build-adminer:
+	@echo "$(GREEN)[+] Building Adminer image...$(NC)"
+	@$(COMPOSE_CMD) build adminer
+	@echo "$(GREEN)[✓] Adminer image built!$(NC)"
+
+build-static:
+	@echo "$(GREEN)[+] Building static-site image...$(NC)"
+	@$(COMPOSE_CMD) build static-site
+	@echo "$(GREEN)[✓] Static-site image built!$(NC)"
 
 # ╔═══════════════════════════════════════════════════════════╗
 # ║                   MONITORING COMMANDS                     ║
@@ -238,11 +250,11 @@ info:
 	@echo "$(GREEN)Project:$(NC) Inception (42 Curriculum)"
 	@echo "$(GREEN)Compose File:$(NC) $(COMPOSE_FILE)"
 	@echo "$(GREEN)Data Directory:$(NC) $(DATA_DIR)"
-	@echo "$(GREEN)Services:$(NC) Nginx, WordPress, MariaDB"
+	@echo "$(GREEN)Services:$(NC) Nginx, WordPress, MariaDB, Adminer, Static-site"
 	@echo "$(BLUE)╚════════════════════════╝$(NC)"
 
 # ╔═══════════════════════════════════════════════════════════╗
 # ║                   .PHONY DECLARATION                      ║
 # ╚═══════════════════════════════════════════════════════════╝
 
-.PHONY: help up down down-v rebuild re build build-nginx build-wp build-db ps logs logs-nginx logs-wp logs-db stats status start stop restart shell-wp shell-db shell-nginx clean fclean prune validate test-db test-wp info
+.PHONY: help up down down-v rebuild re build build-nginx build-wp build-db build-adminer build-static ps logs logs-nginx logs-wp logs-db stats status start stop restart shell-wp shell-db shell-nginx clean fclean prune validate test-db test-wp info

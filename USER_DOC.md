@@ -32,6 +32,15 @@ The Inception stack provides a complete web hosting solution with three services
 - **Port**: Not exposed externally (internal only)
 - **Importance**: Cannot function without this; all content depends on it
 
+### 4. Adminer (Bonus)
+- **What it does**: Web interface to manage the MariaDB database
+- **Access**: `https://your-domain.com/adminer`
+- **Login**: Use SQL_USER and password from secrets/db_password.txt
+
+### 5. Static Site (Bonus)
+- **What it does**: Simple HTML/CSS showcase page
+- **Access**: `https://your-domain.com/portfolio`
+
 ## Starting and Stopping the Project
 
 ### Starting the Infrastructure

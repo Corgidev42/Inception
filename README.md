@@ -16,7 +16,7 @@ Inception is a Docker-based infrastructure project that sets up a complete WordP
 
 ### Architecture Overview
 
-The stack consists of three main services:
+The stack consists of three main services (mandatory) plus two bonus services:
 
 1. **Nginx** (Web Server)
    - Serves as the reverse proxy and web server
@@ -32,6 +32,10 @@ The stack consists of three main services:
    - Provides the relational database backend
    - Stores all WordPress data (posts, users, configurations)
    - Ensures data persistence across container lifecycle
+
+**Bonus services:**
+4. **Adminer** — Database management UI at `https://your-domain/adminer`
+5. **Static site** — Showcase at `https://your-domain/portfolio` (HTML/CSS, no PHP)
 
 ## Instructions
 
@@ -117,8 +121,10 @@ docker compose down -v        # Stop and remove volumes
 
 ### Accessing the Website
 
-- **WordPress site**: Navigate to `https://your-domain.com`
+- **WordPress site**: `https://your-domain.com`
 - **WordPress admin panel**: `https://your-domain.com/wp-admin`
+- **Adminer** (bonus): `https://your-domain.com/adminer` — login: SQL_USER / password from secrets
+- **Static showcase** (bonus): `https://your-domain.com/portfolio`
 - **Login credentials**: the admin username is `ADMIN_USER` from `srcs/.env` on the first install; passwords come from `secrets/*.txt`. If the database volume already exists, WordPress keeps the existing users/passwords (use WP-CLI to update them or recreate volumes).
 
 ## Docker Architecture & Design Choices

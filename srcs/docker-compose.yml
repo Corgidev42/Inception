@@ -9,6 +9,8 @@ services:
     tty: true
     depends_on:
       - wordpress
+      - adminer
+      - static-site
     restart: always
     volumes:
       - wordpress_data:/var/www/html
@@ -53,6 +55,28 @@ services:
     secrets:
       - db_password
       - db_root_password
+
+  adminer:
+    build: ./requirements/adminer/
+    image: adminer
+    container_name: adminer-container
+    restart: always
+    expose:
+      - 8080
+    depends_on:
+      - mariadb
+    networks:
+      - inception
+
+  static-site:
+    build: ./requirements/static-site/
+    image: static-site
+    container_name: static-site-container
+    restart: always
+    expose:
+      - 8080
+    networks:
+      - inception
 
 volumes:
   wordpress_data:
