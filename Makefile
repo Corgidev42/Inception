@@ -75,7 +75,7 @@ up:
 	@echo "$(GREEN)[+] Starting Inception services...$(NC)"
 	@mkdir -p $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
 	@chmod 755 $(DATA_DIR) 2>/dev/null || true
-	@$(COMPOSE_CMD) up -d
+	@$(COMPOSE_CMD) up -d --build
 	@echo "$(GREEN)[✓] Services started successfully!$(NC)"
 	@echo "$(YELLOW)Waiting for initialization...$(NC)"
 	@sleep 5
