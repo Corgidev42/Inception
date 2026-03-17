@@ -36,6 +36,8 @@ The stack consists of three main services (mandatory) plus two bonus services:
 **Bonus services:**
 4. **Adminer** — Database management UI at `https://your-domain/adminer`
 5. **Static site** — Showcase at `https://your-domain/portfolio` (HTML/CSS, no PHP)
+6. **Redis** — Object cache for WordPress (plugin redis-cache)
+7. **FTP** — vsftpd server on port 21, access to WordPress volume (user: `ftpuser`, password: `secrets/ftp_password.txt`)
 
 ## Instructions
 
@@ -79,6 +81,7 @@ The stack consists of three main services (mandatory) plus two bonus services:
    printf '%s' 'change_me_db_root_password' > secrets/db_root_password.txt
    printf '%s' 'change_me_wp_admin_password' > secrets/wp_admin_password.txt
    printf '%s' 'change_me_wp_user_password' > secrets/wp_user_password.txt
+   printf '%s' 'change_me_ftp_password' > secrets/ftp_password.txt
    chmod 600 secrets/*.txt
    ```
 

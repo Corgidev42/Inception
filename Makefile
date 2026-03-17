@@ -75,6 +75,7 @@ help:
 
 up:
 	@if [ ! -f srcs/.env ]; then echo "$(RED)[!] Create srcs/.env from srcs/.env.example first$(NC)"; exit 1; fi
+	@if [ ! -f secrets/ftp_password.txt ]; then echo "$(YELLOW)[!] Creating secrets/ftp_password.txt with default...$(NC)"; printf '%s' 'ftppass' > secrets/ftp_password.txt; chmod 600 secrets/ftp_password.txt; fi
 	@echo "$(GREEN)[+] Starting Inception services...$(NC)"
 	@mkdir -p $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
 	@chmod 755 $(DATA_DIR) 2>/dev/null || true
@@ -257,7 +258,7 @@ info:
 	@echo "$(GREEN)Project:$(NC) Inception (42 Curriculum)"
 	@echo "$(GREEN)Compose File:$(NC) $(COMPOSE_FILE)"
 	@echo "$(GREEN)Data Directory:$(NC) $(DATA_DIR)"
-	@echo "$(GREEN)Services:$(NC) Nginx, WordPress, MariaDB, Adminer, Static-site"
+	@echo "$(GREEN)Services:$(NC) Nginx, WordPress, MariaDB, Adminer, Static-site, Redis, FTP"
 	@echo "$(BLUE)╚════════════════════════╝$(NC)"
 
 # ╔═══════════════════════════════════════════════════════════╗

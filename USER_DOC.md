@@ -41,6 +41,17 @@ The Inception stack provides a complete web hosting solution with three services
 - **What it does**: Simple HTML/CSS showcase page
 - **Access**: `https://your-domain.com/portfolio`
 
+### 6. Redis (Bonus)
+- **What it does**: Object cache for WordPress (plugin redis-cache)
+- **Purpose**: Improves performance by caching database queries and objects
+- **Port**: Internal only (6379)
+
+### 7. FTP (Bonus)
+- **What it does**: vsftpd server for direct file access to the WordPress volume
+- **Access**: FTP on port 21 (host)
+- **Login**: `ftpuser` / Password: from `secrets/ftp_password.txt`
+- **Home directory**: `/var/www/html` (WordPress files)
+
 ## Starting and Stopping the Project
 
 ### Starting the Infrastructure

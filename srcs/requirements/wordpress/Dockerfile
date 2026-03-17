@@ -11,6 +11,7 @@ RUN apt update && apt install -y \
     php8.2-mbstring \
     php8.2-xml \
     php8.2-zip \
+    php8.2-redis \
     mariadb-client \
     wget \
     netcat-traditional \

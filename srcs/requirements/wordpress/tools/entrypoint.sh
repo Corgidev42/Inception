@@ -66,6 +66,14 @@ until nc -z mariadb 3306; do
 done
 echo "Le port 3306 est ouvert !"
 
+# Attente Redis (bonus)
+tries=0
+until nc -z redis 6379 2>/dev/null; do
+    tries=$((tries + 1))
+    if [ "${tries}" -ge 10 ]; then break; fi
+    sleep 1
+done
+[ "${tries}" -lt 10 ] && echo "Redis prêt !" || echo "Redis non disponible, cache désactivé"
 
 cd /var/www/html
 
@@ -94,11 +102,13 @@ if [ ! -f "wp-config.php" ]; then
 #	 Indispensable car on utilises Nginx comme proxy SSL. 
 #	 Ce code dit à WordPress : "Si le trafic arrive en HTTPS via le proxy, considère que le site est bien en HTTPS". 
 #	 Sans ça, on risques des boucles de redirection infinies.
-    wp config set FS_METHOD 'direct' --allow-root    
+    wp config set FS_METHOD 'direct' --allow-root
     cat <<EOF >> wp-config.php
 if (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && \$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
     \$_SERVER['HTTPS'] = 'on';
 }
+define('WP_REDIS_HOST', 'redis');
+define('WP_REDIS_PORT', 6379);
 EOF
 
 # 5. Installation et création d'utilisateurs
@@ -113,6 +123,8 @@ EOF
         --allow-root
 
     wp user create $USER_LOGIN $USER_EMAIL --role=author --user_pass=$USER_PASS --allow-root
+    # Bonus: Redis Object Cache plugin
+    wp plugin install redis-cache --activate --allow-root 2>/dev/null || true
 fi
 
 if wp core is-installed --allow-root >/dev/null 2>&1; then
@@ -140,6 +152,8 @@ if wp core is-installed --allow-root >/dev/null 2>&1; then
         admin_id="$(wp user get "$ADMIN_USER" --field=ID --allow-root)"
         wp user delete admin_login --reassign="${admin_id}" --yes --allow-root
     fi
+    # Bonus: activer Redis si plugin présent
+    wp plugin is-installed redis-cache --allow-root 2>/dev/null && wp plugin activate redis-cache --allow-root 2>/dev/null || true
 fi
 
 # 6. Permissions et lancement final
