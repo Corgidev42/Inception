@@ -15,7 +15,11 @@ LOGIN_NAME := $(shell grep -E '^LOGIN_NAME=' srcs/.env 2>/dev/null | cut -d '=' 
 ifeq ($(LOGIN_NAME),)
   LOGIN_NAME := $(USER)
 endif
-DATA_DIR   := /home/$(LOGIN_NAME)/data
+# DATA_DIR from .env (fallback: $HOME/data for Mac, /home/login/data for Linux)
+DATA_DIR   := $(shell grep -E '^DATA_DIR=' srcs/.env 2>/dev/null | cut -d '=' -f2- | sed 's/\$${LOGIN_NAME}/$(LOGIN_NAME)/g')
+ifeq ($(DATA_DIR),)
+  DATA_DIR := $(or $(HOME),/tmp)/data
+endif
 
 # Default target
 help:
