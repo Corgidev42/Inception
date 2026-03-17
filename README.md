@@ -123,7 +123,7 @@ docker compose down -v        # Stop and remove volumes
 
 - **WordPress site**: `https://your-domain.com`
 - **WordPress admin panel**: `https://your-domain.com/wp-admin`
-- **Adminer** (bonus): `https://your-domain.com/adminer` — login: SQL_USER / password from secrets
+- **Adminer** (bonus): `https://your-domain.com/adminer` — Server: `mariadb`, User: `root` ou `SQL_USER`, Password: `secrets/db_root_password.txt` ou `secrets/db_password.txt`
 - **Static showcase** (bonus): `https://your-domain.com/portfolio`
 - **Login credentials**: the admin username is `ADMIN_USER` from `srcs/.env` on the first install; passwords come from `secrets/*.txt`. If the database volume already exists, WordPress keeps the existing users/passwords (use WP-CLI to update them or recreate volumes).
 

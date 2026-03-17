@@ -35,7 +35,7 @@ The Inception stack provides a complete web hosting solution with three services
 ### 4. Adminer (Bonus)
 - **What it does**: Web interface to manage the MariaDB database
 - **Access**: `https://your-domain.com/adminer`
-- **Login**: Use SQL_USER and password from secrets/db_password.txt
+- **Login**: Server = `mariadb`, User = `root` (or SQL_USER from .env), Password = from `secrets/db_root_password.txt` (or `secrets/db_password.txt` for SQL_USER)
 
 ### 5. Static Site (Bonus)
 - **What it does**: Simple HTML/CSS showcase page

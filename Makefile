@@ -31,6 +31,7 @@ help:
 	@echo "  $(YELLOW)make up$(NC)          - Build and start all containers (detached mode)"
 	@echo "  $(YELLOW)make down$(NC)        - Stop all running containers"
 	@echo "  $(YELLOW)make down-v$(NC)      - Stop containers and remove volumes"
+	@echo "  $(YELLOW)make reset$(NC)       - Full reset (stop + clear WordPress & MariaDB data)"
 	@echo "  $(YELLOW)make rebuild$(NC)     - Rebuild images and start containers"
 	@echo "  $(YELLOW)make re$(NC)          - Full cleanup and restart (like fclean + up)"
 	@echo ""
@@ -92,6 +93,12 @@ down-v:
 	@echo "$(RED)[-] Stopping services and removing volumes...$(NC)"
 	@$(COMPOSE_CMD) down -v
 	@echo "$(GREEN)[✓] Services and volumes removed.$(NC)"
+
+reset:
+	@echo "$(RED)[!] Full reset: stopping, removing volumes AND data...$(NC)"
+	@$(COMPOSE_CMD) down -v
+	@rm -rf $(DATA_DIR)/wordpress/* $(DATA_DIR)/mariadb/* 2>/dev/null || true
+	@echo "$(GREEN)[✓] Data cleared. Run 'make up' to start fresh.$(NC)"
 
 rebuild:
 	@echo "$(GREEN)[+] Rebuilding images and starting services...$(NC)"

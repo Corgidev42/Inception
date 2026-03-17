@@ -47,7 +47,11 @@ services:
     expose:
       - 3306
     networks:
-      - inception
+      inception:
+        aliases:
+          - mariadb
+          - mariadb-container
+          - db
     volumes:
       - mariadb_data:/var/lib/mysql
     env_file:
@@ -95,6 +99,7 @@ volumes:
 
 networks:
   inception:
+    name: inception
 
 secrets:
   db_password:

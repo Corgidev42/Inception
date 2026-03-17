@@ -12,8 +12,13 @@ read_secret() {
 read_secret "SQL_PASSWORD"
 read_secret "SQL_ROOT_PASSWORD"
 
-if [ -f "/var/lib/mysql/.inception_configured" ]; then
+# Si déjà configuré ET tables système présentes -> skip setup
+if [ -f "/var/lib/mysql/.inception_configured" ] && { [ -f "/var/lib/mysql/mysql/db.ibd" ] || [ -f "/var/lib/mysql/mysql/db.frm" ]; }; then
   exec "$@"
+fi
+# Données corrompues (mysql.db manquant) -> on force la réinit
+if [ -f "/var/lib/mysql/.inception_configured" ]; then
+  rm -f /var/lib/mysql/.inception_configured
 fi
 
 if [ -z "${SQL_DATABASE}" ] || [ -z "${SQL_USER}" ] || [ -z "${SQL_PASSWORD}" ] || [ -z "${SQL_ROOT_PASSWORD}" ]; then
@@ -32,10 +37,15 @@ if [ -f /etc/mysql/debian.cnf ]; then
   DEBIAN_PASS="$(grep -m1 '^password=' /etc/mysql/debian.cnf | cut -d= -f2- | tr -d '[:space:]' || true)"
 fi
 
-# 1. Crée les fichiers système de MariaDB (les tables de privilèges, les dictionnaires de données), si ils n'existent pas.
-if [ ! -d "/var/lib/mysql/mysql" ]; then
-    echo "Initialisation du répertoire des données..."
+# 1. Crée les fichiers système de MariaDB (tables mysql.db, etc.)
+#    Sur macOS (bind mount), des données partielles/corrompues peuvent exister.
+#    Si mysql/ n'existe pas ou est incomplet, on nettoie et réinitialise.
+if [ ! -f "/var/lib/mysql/mysql/db.ibd" ] && [ ! -f "/var/lib/mysql/mysql/db.frm" ]; then
+    echo "Initialisation du répertoire des données MariaDB..."
+    rm -rf /var/lib/mysql/*
+    mariadb-install-db --user=mysql --datadir=/var/lib/mysql 2>/dev/null || \
     mysql_install_db --user=mysql --datadir=/var/lib/mysql
+    chown -R mysql:mysql /var/lib/mysql
 fi
 
 # 2. On lance MariaDB en arrière-plan (le & à la fin).
@@ -113,9 +123,14 @@ fi
 
 mysql_exec "CREATE DATABASE IF NOT EXISTS \`${SQL_DATABASE}\`;" || true
 mysql_exec "CREATE USER IF NOT EXISTS \`${SQL_USER}\`@'%' IDENTIFIED BY '${SQL_PASSWORD}';" || true
+mysql_exec "ALTER USER \`${SQL_USER}\`@'%' IDENTIFIED BY '${SQL_PASSWORD}';" || true
 mysql_exec "GRANT ALL PRIVILEGES ON \`${SQL_DATABASE}\`.* TO \`${SQL_USER}\`@'%';" || true
 mysql_exec "ALTER USER 'root'@'localhost' IDENTIFIED BY '${SQL_ROOT_PASSWORD}';" || true
 mysql_exec "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;" || true
+# root@'%' for Adminer (connections from other containers)
+mysql_exec "CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '${SQL_ROOT_PASSWORD}';" || true
+mysql_exec "ALTER USER 'root'@'%' IDENTIFIED BY '${SQL_ROOT_PASSWORD}';" || true
+mysql_exec "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;" || true
 mysql_exec "FLUSH PRIVILEGES;" || true
 
 # 5. Éteindre proprement pour relancer au premier plan
