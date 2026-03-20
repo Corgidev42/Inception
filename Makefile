@@ -21,6 +21,13 @@ ifeq ($(DATA_DIR),)
   DATA_DIR := $(or $(HOME),/tmp)/data
 endif
 
+# Interpolation dans docker-compose.yml (ports nginx). Défaut 443 = sujet 42.
+NGINX_HTTPS_PORT := $(shell grep -E '^NGINX_HTTPS_PORT=' srcs/.env 2>/dev/null | cut -d '=' -f2- | tr -d ' ')
+ifeq ($(NGINX_HTTPS_PORT),)
+  NGINX_HTTPS_PORT := 443
+endif
+export NGINX_HTTPS_PORT
+
 # Default target
 help:
 	@echo "$(BLUE)╔═══════════════════════════════════════════════════════════╗$(NC)"

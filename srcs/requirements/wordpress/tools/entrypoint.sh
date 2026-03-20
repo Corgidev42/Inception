@@ -48,6 +48,13 @@ if [ "${ADMIN_USER}" = "${USER_LOGIN}" ]; then
   exit 1
 fi
 
+# URL publique (redirections WP). Si WORDPRESS_URL est vide : https://DOMAIN_NAME (port 443 implicite)
+if [ -n "${WORDPRESS_URL}" ]; then
+  WP_SITE_URL="${WORDPRESS_URL}"
+else
+  WP_SITE_URL="https://${DOMAIN_NAME}"
+fi
+
 # 1. Attente de MariaDB
 #    Docker lance les conteneurs presque en même temps. 
 #	 WordPress démarre souvent avant que MariaDB n'ait fini d'initialiser ses bases.
@@ -115,7 +122,7 @@ EOF
 #    core install : Remplit les tables de la base de données et crée le compte Administrateur.
 #	 user create : Crée le second utilisateur (rôle author).
     wp core install \
-        --url=$DOMAIN_NAME \
+        --url="${WP_SITE_URL}" \
         --title=$SITE_TITLE \
         --admin_user=$ADMIN_USER \
         --admin_password=$ADMIN_PASSWORD \
@@ -128,6 +135,9 @@ EOF
 fi
 
 if wp core is-installed --allow-root >/dev/null 2>&1; then
+    wp option update home "${WP_SITE_URL}" --allow-root 2>/dev/null || true
+    wp option update siteurl "${WP_SITE_URL}" --allow-root 2>/dev/null || true
+
     existing_id="$(wp user list --search="$ADMIN_EMAIL" --search-columns=user_email --field=ID --allow-root 2>/dev/null | head -n 1 || true)"
     if [ -n "${existing_id}" ]; then
         existing_login="$(wp user get "${existing_id}" --field=user_login --allow-root 2>/dev/null || true)"
