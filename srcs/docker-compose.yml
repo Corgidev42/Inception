@@ -103,6 +103,8 @@ services:
       - "21000-21010:21000-21010"
     volumes:
       - wordpress_data:/var/www/html
+    env_file:
+      - .env
     networks:
       - inception
     secrets:

@@ -1,0 +1,16 @@
+listen=YES
+listen_ipv6=NO
+anonymous_enable=NO
+local_enable=YES
+# Sinon vsftpd refuse les comptes dont le shell n'est pas dans /etc/shells (ex. nologin)
+check_shell=NO
+write_enable=YES
+local_umask=022
+chroot_local_user=YES
+allow_writeable_chroot=YES
+pasv_enable=YES
+pasv_min_port=21000
+pasv_max_port=21010
+# IP annoncée au client en mode passif (doit être joignable depuis FileZilla : 127.0.0.1 en local, IP de la VM en éval)
+pasv_address=__PASV_ADDRESS__
+local_root=/var/www/html
